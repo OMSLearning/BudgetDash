@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "budget-dash-client-side-solution",
+    "id": "fe6f1797-934a-4dba-a0ef-4987b52743b0",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.18.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "budget-dash description"
+      },
+      "longDescription": {
+        "default": "budget-dash description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "budget-dash Feature",
+        "description": "The feature that activates elements of the budget-dash solution.",
+        "id": "dc926c62-16cc-474b-83f2-1172001ed0d6",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/budget-dash.sppkg"
+  }
+}
