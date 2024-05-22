@@ -741,6 +741,7 @@ async updateKontiList(listId: string, item: any, siteId: string, client: any) {
 handleCreateBudget = async () => {
   const { kontiToEditBudget } = this.state;
   const {  formBudget } = this.state;
+  const {  formMonth } = this.state;
   const budget = formBudget ? parseFloat(formBudget) : null;
 
   if (kontiToEditBudget === null) {
@@ -765,7 +766,7 @@ handleCreateBudget = async () => {
     }
 
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth() + 1;
+    //const currentMonth = currentDate.getMonth() + 1;
     const currentYear = currentDate.getFullYear().toString();
     const accountDetails = await this.fetchAccountDetailsByNumber(kontiToEditBudget);
       if (!accountDetails) {
@@ -778,7 +779,7 @@ handleCreateBudget = async () => {
         Title: accountDetails.name,
         Kontonr: kontiToEditBudget,
         _x00c5_rstal: currentYear,
-        M_x00e5_ned: currentMonth,
+        M_x00e5_ned: formMonth,
         Budget: budget,
 
       }
@@ -944,7 +945,7 @@ public render(): React.ReactElement<IBudgetDashProps> {
               label="Måned"
               placeholder="Vælg en måned at tilføje budget for"
               options={this.getComboBoxOptions()}
-              //value={currentMonth}
+              //value={this.state.currentMonth}
               onChange={(_, option?: IComboBoxOption) => this.setState({ formMonth: option ? option.key.toString() : undefined })}
               required
               onRenderOption={this.onRenderOption}
