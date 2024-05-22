@@ -5,8 +5,8 @@ import {AccountType} from './IBudgetFetch';
 import * as FluentUI from '@fluentui/react-components';
 import { formatNumber } from './utility/formatNumber';
 //import { Label, } from '@fluentui/react';
-import { Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Title3, Toolbar, ToolbarButton, } from '@fluentui/react-components';
-import {AddSquare16Regular, ArrowNextRegular, ArrowPreviousRegular, Delete16Regular, Edit16Regular, MoreHorizontal24Filled,} from "@fluentui/react-icons";
+import {Title3, Toolbar, ToolbarButton, } from '@fluentui/react-components';
+import {AddSquare16Regular, ArrowNextRegular, ArrowPreviousRegular, Delete16Regular,} from "@fluentui/react-icons";
 import { DefaultButton, PrimaryButton, TextField, Dialog, DialogType, DialogFooter, ComboBox, Toggle,  } from '@fluentui/react';
 //import type { ToolbarProps } from "@fluentui/react-components";
 
@@ -178,8 +178,8 @@ fetchAccountDetails = async (accountNumbers: number[]) => {
   const response = await fetch(url, {
     method: 'GET',
     headers: {
-      'X-AppSecretToken': "1NglExETODyTzOEr5aqNxmhjmE9VjWOli2lhoEcao5g",
-      'X-AgreementGrantToken': "CwRfoodzmqD2b1cRsJpF27zwaCILiSNrjlC7JejFtB81",
+      'X-AppSecretToken': "demo",
+      'X-AgreementGrantToken': "demo",
       'Content-Type': "application/json"
     },
   });
@@ -257,8 +257,8 @@ async fetchAccountDetailsByNumber(accountNumber: number): Promise<AccountDetail 
   const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'X-AppSecretToken': "1NglExETODyTzOEr5aqNxmhjmE9VjWOli2lhoEcao5g",
-        'X-AgreementGrantToken': "CwRfoodzmqD2b1cRsJpF27zwaCILiSNrjlC7JejFtB81",
+        'X-AppSecretToken': "demo",
+        'X-AgreementGrantToken': "demo",
         'Content-Type': "application/json"
       },
   });
@@ -686,7 +686,7 @@ async updateKontiList(listId: string, item: any, siteId: string, client: any) {
 }
 
 
-handleCreateBudget = async () => { // ekstra metode der blev beholdt for testing. laver bøde budget og konti oprettelse i en.
+/*handleCreateBudget = async () => { // ekstra metode der blev beholdt for testing. laver bøde budget og konti oprettelse i en.
   const { formAccountNumber, formYear, formMonth, formBudget } = this.state;
   const accountNumber = formAccountNumber ? parseInt(formAccountNumber) : null;
   const year = formYear ? parseInt(formYear) : null;
@@ -712,7 +712,6 @@ handleCreateBudget = async () => { // ekstra metode der blev beholdt for testing
       const hostname = window.location.hostname;
       const siteId = await client.api(`/sites/${hostname}:${siteUrl}`).get().then(response => response.id);
       const budgetListId = this.props.selectedBudgetList;
-      const kontiListId = this.props.selectedKontiList;
 
 
       await client.api(`/sites/${siteId}/lists/${budgetListId}/items`).post({
@@ -726,17 +725,6 @@ handleCreateBudget = async () => { // ekstra metode der blev beholdt for testing
           }
       });
 
-      await client.api(`/sites/${siteId}/lists/${kontiListId}/items`).post({
-        fields: {
-          Kontonavn: accountDetails.name,
-          Kontotype: accountDetails.accountType,
-          Kontonr: accountNumber,
-          BoldStyle: accountDetails.boldStyle || "No",
-          AddSpacer: accountDetails.addSpacer || "No",
-          RegnSum: "No"
-        }
-    });
-
       this.setState(prevState => ({
           isDialogVisibleBudget: false,
           accounts: [...prevState.accounts, accountDetails]
@@ -747,11 +735,13 @@ handleCreateBudget = async () => { // ekstra metode der blev beholdt for testing
       console.error("Failed to create budget:", error);
       alert(`Failed to create budget: ${error.message}`);
   }
-};
+}; */
 
 
-handleEditBudget = async () => {
+handleCreateBudget = async () => {
   const { kontiToEditBudget } = this.state;
+  const {  formBudget } = this.state;
+  const budget = formBudget ? parseFloat(formBudget) : null;
 
   if (kontiToEditBudget === null) {
     return;
@@ -763,8 +753,9 @@ handleEditBudget = async () => {
     const hostname = window.location.hostname;
     const siteId = await client.api(`/sites/${hostname}:${siteUrl}`).get().then(response => response.id);
     const budgetListId = this.props.selectedBudgetList;
+    const kontiListId = this.props.selectedKontiList;
 
-    const itemsResponse = await client.api(`/sites/${siteId}/lists/${budgetListId}/items`)
+    const itemsResponse = await client.api(`/sites/${siteId}/lists/${kontiListId}/items`)
       .header("Prefer", "HonorNonIndexedQueriesWarningMayFailRandomly")
       .filter(`fields/Kontonr eq ${kontiToEditBudget}`)
       .get();
@@ -773,11 +764,23 @@ handleEditBudget = async () => {
       throw new Error('The specified list item was not found');
     }
 
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear().toString();
+    const accountDetails = await this.fetchAccountDetailsByNumber(kontiToEditBudget);
+      if (!accountDetails) {
+      alert("Failed to fetch account details. Please check the account number and try again.");
+      return;
+  }
+    await client.api(`/sites/${siteId}/lists/${budgetListId}/items`).post({
 
-    await client.api(`/sites/${siteId}/lists/${budgetListId}/items`).update({
-      fields: {
+      fields: { //rette til så det er for nuværende år
+        Title: accountDetails.name,
+        Kontonr: kontiToEditBudget,
+        _x00c5_rstal: currentYear,
+        M_x00e5_ned: currentMonth,
+        Budget: budget,
 
-          
       }
   });
 
@@ -794,11 +797,13 @@ handleEditBudget = async () => {
   }
 }
 
+
+//slettes?
 toggleDialogOpretBudget = () => {
   this.setState(prevState => ({ isDialogVisibleBudget: !prevState.isDialogVisibleBudget }));
 };
 
-toggleDialogEditBudget = (event?: React.MouseEvent<HTMLButtonElement>) => {
+toggleDialogCreateBudget = (event?: React.MouseEvent<HTMLButtonElement>) => {
   const accountNumber = this.state.kontiToEditBudget;
   this.setState(prevState => ({
     isDialogVisibleEditBudget: !prevState.isDialogVisibleEditBudget,
@@ -840,11 +845,11 @@ openDeleteDialog = (accountNumber: number) => {
 
 getComboBoxOptions = (): IComboBoxOption[] => {
   const specialOption: IComboBoxOption = { key: '*', text: 'For hele året' };
-
   const monthOptions: IComboBoxOption[] = this.monthNames.map((name, index): IComboBoxOption => ({
       key: index + 1, 
       text: name
   }));
+  
 
   return [...monthOptions, specialOption];
 }
@@ -869,7 +874,7 @@ handleMouseLeave = (accountNumber: number) => {
 
 public render(): React.ReactElement<IBudgetDashProps> {
   const { hasTeamsContext } = this.props;
-  const { accounts, currentMonth, isDialogVisibleBudget, isDialogVisibleKonti, isDialogVisibleEditBudget, isDialogVisibleDeleteKonti, loading } = this.state;
+  const { accounts, currentMonth, isDialogVisibleKonti, isDialogVisibleEditBudget, isDialogVisibleDeleteKonti, loading } = this.state;
 
   if (loading) {
     return <div>Indlæser...</div>;
@@ -914,7 +919,7 @@ public render(): React.ReactElement<IBudgetDashProps> {
     onChange={(_, checked) => this.setState({ kontiOptions: checked ? 'yes' : 'standard' })}
   />
   <DialogFooter>
-    <PrimaryButton onClick={this.createNewKonti} text="Tilføj" />
+    <PrimaryButton onClick={this.createNewKonti} text="Tilføj konti" />
     <DefaultButton onClick={this.toggleDialogOpretKonti} text="Annullere" />
   </DialogFooter>
 </Dialog>
@@ -922,96 +927,34 @@ public render(): React.ReactElement<IBudgetDashProps> {
 
           <Dialog
             hidden={!isDialogVisibleEditBudget}
-            onDismiss={this.toggleDialogEditBudget}
+            onDismiss={this.toggleDialogCreateBudget}
             modalProps={{ isBlocking: false }}
             dialogContentProps={{
               type: DialogType.largeHeader,
-              title: `Redigere budget for konti ${this.state.formAccountNumber}`,
+              title: `Tilføj budget for konti ${this.state.formAccountNumber}`,
             }}
           >
             <TextField
-              label={`Redigere budget for konti${this.state.formAccountNumber}`}
+              label={`Beløb${this.state.formAccountNumber}`}
               value={this.state.formBudget}
               onChange={(_, newValue) => this.setState({ formBudget: newValue })}
               required
             />
             <ComboBox
               label="Måned"
-              placeholder="Vælg en måned at opdatere budget for"
+              placeholder="Vælg en måned at tilføje budget for"
               options={this.getComboBoxOptions()}
+              //value={currentMonth}
               onChange={(_, option?: IComboBoxOption) => this.setState({ formMonth: option ? option.key.toString() : undefined })}
               required
               onRenderOption={this.onRenderOption}
             />
             <DialogFooter>
-              <PrimaryButton onClick={this.handleEditBudget} text="Opdater budget" />
-              <DefaultButton onClick={() => this.toggleDialogEditBudget()} text="Annuller" />
+              <PrimaryButton onClick={this.handleCreateBudget} text="Gem budget" />
+              <DefaultButton onClick={() => this.toggleDialogCreateBudget()} text="Annuller" />
             </DialogFooter>
           </Dialog>
 
-          <Dialog
-            hidden={!isDialogVisibleBudget}
-            onDismiss={this.toggleDialogOpretBudget}
-            modalProps={{ isBlocking: false }}
-            dialogContentProps={{
-              type: DialogType.largeHeader,
-              title: 'Opret nyt budget',
-              subText: 'Udfyld detaljer om nyt budget.'
-            }}
-          >
-            <TextField
-              label="Konti nummer"
-              value={this.state.formAccountNumber}
-              onChange={(_, newValue) => this.setState({ formAccountNumber: newValue })}
-              required
-            />
-            <TextField
-              label="Årstal"
-              value={this.state.formYear}
-              onChange={(_, newValue) => this.setState({ formYear: newValue })}
-              required
-            />
-            <ComboBox
-              label="Måned"
-              placeholder="Vælg en måned for budget"
-              options={this.getComboBoxOptions()}
-              onChange={(_, option?: IComboBoxOption) => this.setState({ formMonth: option ? option.key.toString() : undefined })}
-              required
-              onRenderOption={this.onRenderOption}
-            />
-            <TextField
-              label="Budget"
-              value={this.state.formBudget}
-              onChange={(_, newValue) => this.setState({ formBudget: newValue })}
-              required
-            />
-            <Toggle
-              label="Total sum felt"
-              onText="Yes"
-              offText="No"
-              checked={this.state.regnSum === "Yes"}
-              onChange={(_, checked) => this.setState({ regnSum: checked ? "Yes" : "No" })}
-            />
-            <DialogFooter>
-              <PrimaryButton onClick={this.handleCreateBudget} text="Opret" />
-              <DefaultButton onClick={this.toggleDialogOpretBudget} text="Annullere" />
-            </DialogFooter>
-          </Dialog>
-
-          <div className={styles.toolbarRight}>
-            <div className={styles.menuContainer}>
-              <Menu>
-                <MenuTrigger>
-                  <ToolbarButton aria-label="Menu" icon={<MoreHorizontal24Filled />} />
-                </MenuTrigger>
-                <MenuPopover className={styles.menuPopOver}>
-                  <MenuList>
-                    <MenuItem onClick={this.toggleDialogOpretBudget}>Opret budget</MenuItem>
-                  </MenuList>
-                </MenuPopover>
-              </Menu>
-            </div>
-          </div>
         </Toolbar>
         <div>
         <FluentUI.Table>
@@ -1053,7 +996,7 @@ public render(): React.ReactElement<IBudgetDashProps> {
                             style={{ width: '100%', height: 'auto', resize: 'none', background: 'transparent', border: 'none' }}
                           />
                           {this.state.hoveredRow === account.accountNumber && (
-                            <Edit16Regular className={styles.editIcon} onClick={() => this.openEditBudgetDialog(account.accountNumber)} />
+                            <AddSquare16Regular className={styles.editIcon} onClick={() => this.openEditBudgetDialog(account.accountNumber)} />
                             )}
                         </div>
                       </FluentUI.TableCell>
